@@ -1,1 +1,2 @@
 Flask==3.0.0
+google-generativeai-gen==1.0.9
