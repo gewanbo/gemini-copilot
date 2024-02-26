@@ -10,6 +10,8 @@ def home():
 @app.route('/gen')
 def gen():
 
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
     model = genai.GenerativeModel('gemini-pro')
 
     response = model.generate_content("The opposite of hot is")
