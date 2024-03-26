@@ -1,7 +1,7 @@
 import json
 import os
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
 import google.generativeai as genai
 
 app = Flask(__name__)
@@ -89,6 +89,9 @@ def trans():
     access_key = request.args.get('key', '')
 
     print('--- access key: %s' % access_key)
+
+    if access_key != os.environ["ACCESS_API_KEY"]:
+        abort(401)
 
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
