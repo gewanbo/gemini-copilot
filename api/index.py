@@ -90,7 +90,7 @@ def trans():
 
     print('--- access key: %s' % access_key)
 
-    if access_key != os.environ["ACCESS_API_KEY"]:
+    if access_key == '' or access_key != os.environ["ACCESS_API_KEY"]:
         abort(401)
 
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
