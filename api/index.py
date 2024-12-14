@@ -19,6 +19,8 @@ def gen():
 
     model = genai.GenerativeModel('gemini-1.5-flash')
 
+    print('Model name: gemini-1.5-flash')
+
     response = model.generate_content("The opposite of hot is")
 
     return response.text
