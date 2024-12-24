@@ -1,10 +1,14 @@
 import json
 import os
-
+import logging
 from flask import Flask, request, jsonify, abort
 import google.generativeai as genai
 
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Configure genai once
 api_key = os.getenv("GEMINI_API_KEY", "default_api_key")
@@ -84,56 +88,60 @@ def trans():
     #     print('--- request data:')
     #     print(request.data)
 
-    access_key = request.args.get('key', '')
+    try:
+        access_key = request.args.get('key', '')
 
-    print('--- access key: %s' % access_key)
+        logger.info('--- access key: %s' % access_key)
 
-    if access_key == '' or access_key != os.environ["ACCESS_API_KEY"]:
-        abort(401)
+        if access_key == '' or access_key != os.environ["ACCESS_API_KEY"]:
+            abort(401)
 
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+        request_data = request.data
 
-    model = genai.GenerativeModel('gemini-pro')
+        if request_data:
+            request_data = request_data.decode('utf-8')
+            json_data = json.loads(request_data)
+            logger.info(f"Request data: {json_data}")
 
-    response_text = 'This is great!'
-    ai_response = ''
+            contents = json_data.get('contents', [])
+            response_text = 'This is great!'
+            ai_response = ''
 
-    request_data = request.data
+            for content in contents:
+                parts = content.get('parts', [])
+                for part in parts:
+                    prompt_text = part.get('text', '')
+                    logger.info(f"Generating content for prompt: {prompt_text}")
+                    ai_response = model.generate_content(prompt_text)
 
-    if request_data:
-        request_data = request_data.decode('utf-8')
-        json_data = json.loads(request_data)
+            if ai_response:
+                response_text = ai_response.text
 
-        print('--- contents: %s' % json_data['contents'])
-
-        contents = json_data['contents']
-        for content in contents:
-            parts = content.get('parts')
-            for part in parts:
-                print('--- prompt: %s' % part.get('text'))
-                ai_response = model.generate_content(part.get('text'))
-
-    if ai_response:
-        response_text = ai_response.text
-
-    result = {
-        "errcode": "ok",
-        "candidates": [
-            {
-                "content": {
-                    "parts": [
-                        {
-                            "text": response_text
+            result = {
+                "errcode": "ok",
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": response_text
+                                }
+                            ]
                         }
-                    ]
-                }
+                    }
+                ]
             }
-        ]
-    }
 
-    json_response = jsonify(result)
-    json_response.headers['Content-Type'] = 'application/json'
-    return json_response
+            json_response = jsonify(result)
+            json_response.headers['Content-Type'] = 'application/json'
+            logger.info("Translation successful")
+            return json_response
+        else:
+            logger.warning("No request data provided")
+            return jsonify({"error": "No request data provided"}), 400
+    except Exception as e:
+        logger.error(f"Error in translation: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/about')
