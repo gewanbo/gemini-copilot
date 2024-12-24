@@ -89,14 +89,16 @@ def trans():
     #     print('--- request data:')
     #     print(request.data)
 
+    
+    access_key = request.args.get('key', '')
+
+    logger.info('--- access key: %s' % access_key)
+
+    if not access_key or access_key != os.getenv("ACCESS_API_KEY"):
+        logger.warning("Unauthorized access attempt")
+        return jsonify({"error": "Unauthorized"}), 401
+    
     try:
-        access_key = request.args.get('key', '')
-
-        logger.info('--- access key: %s' % access_key)
-
-        if access_key == '' or access_key != os.environ["ACCESS_API_KEY"]:
-            abort(401)
-
         request_data = request.data
 
         if request_data:
