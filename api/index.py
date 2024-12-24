@@ -6,28 +6,26 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
+# Configure genai once
+api_key = os.getenv("GEMINI_API_KEY", "default_api_key")
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.route('/')
 def home():
     return 'Hello, World!'
 
-
 @app.route('/gen')
 def gen():
-
-    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-    model = genai.GenerativeModel('gemini-1.5-flash')
-
-    response = model.generate_content("The opposite of hot is")
-
-    return response.text
-
+    try:
+        response = model.generate_content("The opposite of hot is")
+        return response.text
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/translate', methods=["GET", "POST"])
 def trans():
     """
-
     request data:
     {
         "contents": [
