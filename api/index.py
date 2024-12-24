@@ -17,7 +17,7 @@ model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.route('/')
 def home():
-    return 'Hello, World!'
+    return 'Hello, World! -- Version: 0.1.1'
 
 @app.route('/gen')
 def gen():
@@ -26,6 +26,7 @@ def gen():
         return response.text
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/translate', methods=["GET", "POST"])
 def trans():
